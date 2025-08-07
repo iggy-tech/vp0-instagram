@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   View, 
-  Text, 
   StyleSheet, 
   SafeAreaView, 
   ScrollView, 
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { Text } from '@/components/text';
 import { useRouter } from 'expo-router';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import StoryViewer from '@/components/story-viewer';
@@ -114,9 +114,9 @@ export default function HomeScreen() {
             <Image 
               source={require('@/assets/logo/instagram.png')}
               style={styles.logoImage}
-              resizeMode="contain"
+       
             />
-            <Text style={styles.dropdownIcon}>⌄</Text>
+            
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
@@ -157,7 +157,7 @@ export default function HomeScreen() {
                   )}
                   {post.musicTitle && (
                     <View style={styles.musicInfo}>
-                      <Text style={styles.musicIcon}>🎵</Text>
+                    
                       <Text style={styles.musicTitle}>{post.musicTitle}</Text>
                     </View>
                   )}

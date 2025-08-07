@@ -1,11 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { Octicons, Feather } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
@@ -14,7 +13,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#000', // Instagram uses black for active tabs
+        tabBarActiveTintColor: '#000', // Black for active tabs
         tabBarInactiveTintColor: '#8E8E93', // Light gray for inactive tabs
         headerShown: false,
         tabBarButton: HapticTab,
@@ -43,10 +42,10 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={24} 
-              name={focused ? "house.fill" : "house"} 
-              color={color} 
+            <Octicons
+              size={24}
+              name="home"
+              color={focused ? '#000' : '#8E8E93'}
             />
           ),
         }}
@@ -58,10 +57,10 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={24} 
-              name={focused ? "magnifyingglass.circle.fill" : "magnifyingglass"} 
-              color={color} 
+            <Octicons
+              size={24}
+              name="search"
+              color={focused ? '#000' : '#8E8E93'}
             />
           ),
         }}
@@ -73,10 +72,10 @@ export default function TabLayout() {
         options={{
           title: 'Create',
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={24} 
-              name={focused ? "plus.square.fill" : "plus.square"} 
-              color={color} 
+            <Octicons
+              size={24}
+              name="plus-circle"
+              color={focused ? '#000' : '#8E8E93'}
             />
           ),
         }}
@@ -88,10 +87,10 @@ export default function TabLayout() {
         options={{
           title: 'Reels',
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={24} 
-              name={focused ? "play.rectangle.fill" : "play.rectangle"} 
-              color={color} 
+            <Octicons
+              size={24}
+              name="play"
+              color={focused ? '#000' : '#8E8E93'}
             />
           ),
         }}
@@ -103,10 +102,10 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={24} 
-              name={focused ? "person.crop.circle.fill" : "person.crop.circle"} 
-              color={color} 
+            <Octicons
+              size={24}
+              name="person"
+              color={focused ? '#000' : '#8E8E93'}
             />
           ),
         }}

@@ -1,23 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  Modal,
   ScrollView,
   TouchableOpacity,
   TextInput,
   Image,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { AntDesign, Feather } from '@expo/vector-icons';
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { Text } from '@/components/text';
 
-const { height, width } = Dimensions.get('window');
 
-export default function CommentsModal({ visible, onClose, postId, comments }) {
+interface CommentsModalProps {
+  visible: boolean;
+  onClose: () => void;
+  postId: string;
+  comments?: {
+    id: string;
+    username: string;
+    avatar: string;
+    text: string;
+    likes: number;
+    timestamp: string;
+    replies: number;
+  }[];
+}
+
+
+export default function CommentsModal({ visible, onClose, postId, comments }: CommentsModalProps) {
   const [newComment, setNewComment] = useState('');
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  // Define snap points - smaller range to keep it at bottom
+  const snapPoints = useMemo(() => ['60%', '90%'], []);
 
   const mockComments = [
     {
@@ -58,7 +76,34 @@ export default function CommentsModal({ visible, onClose, postId, comments }) {
     }
   ];
 
-  const formatLikes = (count) => {
+  // Handle opening/closing the bottom sheet modal
+  useEffect(() => {
+    if (visible) {
+      bottomSheetModalRef.current?.present();
+    } else {
+      bottomSheetModalRef.current?.dismiss();
+    }
+  }, [visible]);
+
+  const handleCommentChange = (text:any) => {
+    setNewComment(text);
+    // Expand when typing
+    if (text.length > 0) {
+      bottomSheetModalRef.current?.snapToIndex(1); // Snap to 90%
+    } else {
+      bottomSheetModalRef.current?.snapToIndex(0); // Snap back to 60%
+    }
+  };
+
+  const sendComment = () => {
+    if (newComment.trim()) {
+      console.log('Sending comment:', newComment);
+      setNewComment('');
+      bottomSheetModalRef.current?.snapToIndex(0); // Collapse after sending to 60%
+    }
+  };
+
+  const formatLikes = (count:any) => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
     } else if (count >= 1000) {
@@ -67,33 +112,37 @@ export default function CommentsModal({ visible, onClose, postId, comments }) {
     return count.toString();
   };
 
+  const handleSheetChanges = (index:any) => {
+    if (index === -1) {
+      // Bottom sheet is dismissed
+      onClose();
+    }
+  };
+
   return (
-    <Modal
-      visible={visible}
-      animationType='slide'
-      transparent={true}
-      onRequestClose={onClose}
-
-
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      snapPoints={snapPoints}
+      onChange={handleSheetChanges}
+      enablePanDownToClose={true}
+      backgroundStyle={styles.bottomSheetBackground}
+      handleIndicatorStyle={styles.handleIndicator}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
-      <View style={styles.overlay}>
-        <TouchableOpacity 
-          style={styles.backdrop} 
-          activeOpacity={1}
-          onPress={onClose}
-        />
-        
-        <View style={styles.modalContainer}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.handleBar} />
-            <Text style={styles.headerTitle}>Comments</Text>
-          </View>
+      <BottomSheetView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Comments</Text>
+        </View>
 
-          {/* Comments List */}
+        {/* Comments List - Takes remaining space */}
+        <View style={styles.commentsContainer}>
           <ScrollView 
             style={styles.commentsList}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.commentsContent}
+            keyboardShouldPersistTaps="handled"
           >
             {mockComments.map((comment) => (
               <View key={comment.id} style={styles.commentItem}>
@@ -128,7 +177,10 @@ export default function CommentsModal({ visible, onClose, postId, comments }) {
               </View>
             ))}
           </ScrollView>
+        </View>
 
+        {/* Fixed Bottom Section - Always Visible */}
+        <View style={styles.bottomSection}>
           {/* Emoji Reactions */}
           <View style={styles.emojiBar}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -140,50 +192,56 @@ export default function CommentsModal({ visible, onClose, postId, comments }) {
             </ScrollView>
           </View>
 
-          {/* Comment Input - Sticky Bottom */}
+          {/* Comment Input */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.inputContainer}
+            keyboardVerticalOffset={0}
           >
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' }} 
-              style={styles.userAvatar} 
-            />
-            <TextInput
-              style={styles.textInput}
-              placeholder="Add a comment for lifeonezymede"
-              placeholderTextColor="#8E8E93"
-              value={newComment}
-              onChangeText={setNewComment}
-              multiline
-            />
-            <TouchableOpacity style={styles.inputButton}>
-              <Feather name="smile" size={24} color="#8E8E93" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.inputButton}>
-              <Feather name="gift" size={24} color="#8E8E93" />
-            </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <Image 
+                source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' }} 
+                style={styles.userAvatar} 
+              />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Add a comment for lifeonezymede"
+                placeholderTextColor="#8E8E93"
+                value={newComment}
+                onChangeText={handleCommentChange}
+                multiline
+                maxLength={2200}
+              />
+              <TouchableOpacity style={styles.inputButton}>
+                <Feather name="smile" size={24} color="#8E8E93" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.inputButton}>
+                <Feather name="gift" size={24} color="#8E8E93" />
+              </TouchableOpacity>
+              {newComment.trim().length > 0 && (
+                <TouchableOpacity style={styles.sendButton} onPress={sendComment}>
+                  <Feather name="arrow-up" size={20} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
           </KeyboardAvoidingView>
         </View>
-      </View>
-    </Modal>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     flex: 1,
-
-  },
-  backdrop: {
-    flex: 1,
-  },
-  modalContainer: {
-    height: height * 0.8, // 60% of screen height
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    overflow: 'hidden',
+  },
+  bottomSheetBackground: {
+    backgroundColor: '#fff',
+  },
+  handleIndicator: {
+    backgroundColor: '#C7C7CC',
+    width: 40,
+    height: 4,
   },
   header: {
     alignItems: 'center',
@@ -191,17 +249,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: '#E5E5E7',
   },
-  handleBar: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#C7C7CC',
-    borderRadius: 2,
-    marginBottom: 12,
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#000',
+  },
+  commentsContent: {
+    paddingBottom: 20,
+  },
+  commentsContainer: {
+    flex: 1,
+    minHeight: 0, // Important for proper flex behavior
   },
   commentsList: {
     flex: 1,
@@ -265,6 +323,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontWeight: '500',
   },
+  bottomSection: {
+    backgroundColor: '#fff',
+    flexShrink: 0, // Prevent shrinking
+  },
   emojiBar: {
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -283,6 +345,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16, // Account for safe area
     borderTopWidth: 0.5,
     borderTopColor: '#E5E5E7',
     backgroundColor: '#fff',
@@ -307,5 +370,14 @@ const styles = StyleSheet.create({
   inputButton: {
     marginLeft: 12,
     padding: 4,
+  },
+  sendButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
   },
 });

@@ -1,15 +1,15 @@
 import React from 'react';
 import { 
   View, 
-  Text, 
+
   StyleSheet, 
   SafeAreaView, 
   TouchableOpacity, 
   Dimensions,
   StatusBar 
 } from 'react-native';
+import { Text } from '@/components/text';
 
-const { width } = Dimensions.get('window');
 
 export default function CreateScreen() {
   const createOptions = [

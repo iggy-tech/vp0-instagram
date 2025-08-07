@@ -1,12 +1,13 @@
 import React from 'react';
 import { 
   View, 
-  Text, 
+ 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { Text } from '@/components/text';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const StoriesSection = ({ stories, onStoryPress }) => {

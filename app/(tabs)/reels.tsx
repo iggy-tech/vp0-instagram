@@ -3,7 +3,7 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  SafeAreaView, 
+
   ScrollView, 
   TouchableOpacity,
   Dimensions,
@@ -99,7 +99,7 @@ export default function ReelsScreen() {
               </Text>
               
               <View style={styles.musicInfo}>
-                <Text style={styles.musicIcon}>🎵</Text>
+              
                 <Text style={styles.musicText}>Original audio - {reel.username}</Text>
               </View>
             </View>

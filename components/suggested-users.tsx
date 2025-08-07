@@ -1,12 +1,15 @@
 import React from 'react';
 import { 
   View, 
-  Text, 
+ 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { Text } from '@/components/text';
+
+
 
 const SuggestedUsers = ({ users }) => {
   return (
