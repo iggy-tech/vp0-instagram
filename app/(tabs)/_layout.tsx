@@ -96,6 +96,8 @@ export default function TabLayout() {
         }}
       />
       
+ 
+      
       {/* Profile */}
       <Tabs.Screen
         name="profile"

@@ -54,6 +54,11 @@ export default function HomeScreen() {
     router.push('/messages');
   };
 
+  const navigateToNotifications = () => {
+    router.push('/notifications');
+  };
+  
+
   const openStoryViewer = (userIndex) => {
     setSelectedUserIndex(userIndex);
     setSelectedStoryIndex(0);
@@ -119,7 +124,7 @@ export default function HomeScreen() {
             
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} onPress={navigateToNotifications}>
               <AntDesign name="hearto" size={24} color="#000" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={navigateToMessages}>
