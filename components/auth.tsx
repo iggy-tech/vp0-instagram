@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   SafeAreaView,
   TextInput,
@@ -12,10 +11,12 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useAuth } from '@/contexts/auth-context';
+import { Text } from './text';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -63,7 +64,6 @@ export default function AuthScreen() {
         if (error) {
           Alert.alert('Sign Up Error', error.message);
         }
-        // No success alert - user gets signed in automatically
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
@@ -108,7 +108,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FAFAFA" />
       
       <KeyboardAvoidingView 
         style={styles.keyboardView}
@@ -117,24 +117,15 @@ export default function AuthScreen() {
         <View style={styles.content}>
           {/* Instagram Logo */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoWrapper}>
-              <View style={styles.logoGradientBorder}>
-                <View style={styles.logoBackground}>
-                  <View style={styles.cameraIcon}>
-                    <View style={styles.cameraLens} />
-                    <View style={styles.cameraDot} />
-                  </View>
-                </View>
-              </View>
-            </View>
+            <Image
+              source={require('@/assets/images/instagram-logo-gradient.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
 
-          {/* Form */}
-          <View style={styles.formContainer}>
-            {!isLogin && (
-              <Text style={styles.formTitle}>Create Account</Text>
-            )}
-            
+          {/* Form Container */}
+          <View style={styles.formContainer}>            
             <TextInput
               style={styles.input}
               placeholder={isLogin ? "Username, email or mobile number" : "Email"}
@@ -165,7 +156,7 @@ export default function AuthScreen() {
               disabled={!validateForm() || isSubmitting}
             >
               {isSubmitting ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color="#fff" size="small" />
               ) : (
                 <Text style={styles.submitButtonText}>
                   {isLogin ? 'Log in' : 'Sign up'}
@@ -194,12 +185,9 @@ export default function AuthScreen() {
               </Text>
             </TouchableOpacity>
 
-            <View style={styles.metaContainer}>
-              <Text style={styles.metaText}>∞ Meta</Text>
-            </View>
+          
 
-            {/* Home Indicator */}
-            <View style={styles.homeIndicator} />
+
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -210,7 +198,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#FAFAFA',
   },
   centered: {
     justifyContent: 'center',
@@ -227,83 +215,42 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 40,
-    paddingTop: height * 0.12,
-    paddingBottom: 20,
+    paddingHorizontal: 32,
+    paddingTop: height * 0.15,
+    paddingBottom: 30,
   },
   logoContainer: {
     alignItems: 'center',
     marginBottom: height * 0.08,
   },
-  logoWrapper: {
-    alignItems: 'center',
-  },
-  logoGradientBorder: {
-    width: 100,
-    height: 100,
-    borderRadius: 22,
-    padding: 3,
-    backgroundColor: '#E1306C', // Instagram pink fallback
-    background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-  },
-  logoBackground: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 19,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cameraIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    borderWidth: 3,
-    borderColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  cameraLens: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: '#000',
-  },
-  cameraDot: {
-    position: 'absolute',
-    top: 6,
-    right: 8,
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: '#000',
+  logoImage: {
+    width: 80,
+    height: 80,
   },
   formContainer: {
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 0,
   },
   input: {
     width: '100%',
-    height: 54,
+    height: 48,
     borderWidth: 1,
     borderColor: '#DBDBDB',
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#fff',
-    marginBottom: 16,
-    color: '#000',
+    backgroundColor: '#FAFAFA',
+    marginBottom: 12,
+    color: '#262626',
   },
   submitButton: {
     width: '100%',
-    height: 54,
-    borderRadius: 27,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 32,
+    marginTop: 16,
+    marginBottom: 24,
   },
   submitButtonActive: {
     backgroundColor: '#0095F6',
@@ -318,6 +265,7 @@ const styles = StyleSheet.create({
   },
   forgotPassword: {
     alignItems: 'center',
+    paddingVertical: 8,
   },
   forgotPasswordText: {
     fontSize: 14,
@@ -330,13 +278,13 @@ const styles = StyleSheet.create({
   },
   createAccountButton: {
     width: '100%',
-    height: 54,
+    height: 48,
     borderWidth: 1,
     borderColor: '#0095F6',
-    borderRadius: 27,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
     backgroundColor: 'transparent',
   },
   createAccountText: {

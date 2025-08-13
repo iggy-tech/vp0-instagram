@@ -22,13 +22,13 @@ export const storyUsers = [
       {
         id: '1',
         type: 'image',
-        media: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&fit=crop',
+        media: 'https://images.unsplash.com/photo-1754898284154-62daf743b909?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         timestamp: '3h'
       },
       {
         id: '2',
-        type: 'video',
-        media: './assets/videos/bamboo.mp4',
+        type: 'image',
+        media: 'https://images.unsplash.com/photo-1754763679553-e7afebe65d44?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         timestamp: '4h'
       },
       {
@@ -52,8 +52,8 @@ export const storyUsers = [
       },
       {
         id: '2',
-        type: 'video',
-        media: './assets/videos/tiger.mp4',
+        type: 'image',
+        media: 'https://images.unsplash.com/photo-1754766621748-2a96cbf56a1f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         timestamp: '7h'
       }
     ]
@@ -97,8 +97,8 @@ export const storyUsers = [
     stories: [
       {
         id: '1',
-        type: 'video',
-        media: './assets/videos/turtle.mp4',
+        type: 'image',
+        media: 'https://images.unsplash.com/photo-1735029660539-59df2bded95b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         timestamp: '3h'
       }
     ]
@@ -129,8 +129,8 @@ export const storyUsers = [
     stories: [
       {
         id: '1',
-        type: 'video',
-        media: './assets/videos/parrot.mp4',
+        type: 'image',
+        media: 'https://images.unsplash.com/photo-1743345358132-bc60a91716ea?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         timestamp: '6h'
       }
     ]

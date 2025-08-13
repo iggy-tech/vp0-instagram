@@ -10,7 +10,19 @@ import {
 import { Text } from '@/components/text';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const StoriesSection = ({ stories, onStoryPress }) => {
+
+
+interface Story {
+  id: string;
+  username: string;
+  isYourStory: boolean;
+  hasStory: boolean;
+  image: string;
+}
+
+
+
+const StoriesSection: React.FC<{ stories: Story[]; onStoryPress: (index: number) => void }> = ({ stories, onStoryPress }) => {
   return (
     <ScrollView 
       horizontal 
@@ -47,9 +59,7 @@ const StoriesSection = ({ stories, onStoryPress }) => {
                   style={styles.storyImage}
                   onError={() => console.log('Story image failed to load')}
                 />
-                <View style={styles.addButton}>
-                  <Text style={styles.plusIcon}>+</Text>
-                </View>
+               
               </View>
             ) : (
               <Image 

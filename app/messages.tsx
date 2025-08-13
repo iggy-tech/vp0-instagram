@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
- 
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
@@ -11,80 +10,13 @@ import {
 } from 'react-native';
 import { Text } from '@/components/text';
 import { useRouter, Stack } from 'expo-router';
-
 import { Feather } from '@expo/vector-icons';
+import { conversations } from '@/data/conversations-data';
 
 export default function MessagesPage() {
   const router = useRouter();
 
-  const conversations = [
-    {
-      id: 'alex-johnson',
-      username: 'Alex Johnson',
-      lastMessage: 'Thanks for sharing that article',
-      timestamp: '2m',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      unread: true,
-    },
-    {
-      id: 'sarah-williams',
-      username: 'Sarah Williams',
-      lastMessage: 'Sounds good, see you tomorrow',
-      timestamp: '15m',
-      avatar: 'https://plus.unsplash.com/premium_photo-1670282393309-70fd7f8eb1ef?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      unread: false,
-    },
-    {
-      id: 'mike-chen',
-      username: 'Mike Chen',
-      lastMessage: 'Got it, will review and get back to you',
-      timestamp: '1h',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      unread: false,
-    },
-    {
-      id: 'team-workspace',
-      username: 'Team Workspace',
-      lastMessage: 'Meeting notes have been shared',
-      timestamp: '3h',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-      unread: false,
-    },
-    {
-      id: 'emma-davis',
-      username: 'Emma Davis',
-      lastMessage: 'Perfect, let\'s move forward with this',
-      timestamp: '5h',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
-      unread: false,
-    },
-    {
-      id: 'project-team',
-      username: 'Project Team',
-      lastMessage: 'Updated timeline is ready for review',
-      timestamp: '1d',
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
-      unread: false,
-    },
-    {
-      id: 'david-smith',
-      username: 'David Smith',
-      lastMessage: 'Delivery confirmed for Friday',
-      timestamp: '2d',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face',
-      unread: false,
-    },
-    {
-      id: 'lisa-brown',
-      username: 'Lisa Brown',
-      lastMessage: 'Thank you for the quick response',
-      timestamp: '3d',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-      unread: false,
-    },
-  ];
-
-  const navigateToChat = (chatId:any, username:any) => {
+  const navigateToChat = (chatId: string, username: string) => {
     router.push(`/chat/${chatId}?username=${encodeURIComponent(username)}`);
   };
 
@@ -131,8 +63,8 @@ export default function MessagesPage() {
         {/* Conversations */}
         <ScrollView style={styles.conversationsList} showsVerticalScrollIndicator={false}>
           {conversations.map((conversation) => (
-            <TouchableOpacity 
-              key={conversation.id} 
+            <TouchableOpacity
+              key={conversation.id}
               style={styles.conversationItem}
               onPress={() => navigateToChat(conversation.id, conversation.username)}
             >
@@ -220,7 +152,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-
   },
   sectionTitle: {
     fontSize: 18,
@@ -288,4 +219,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
 });
-

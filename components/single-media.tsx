@@ -12,7 +12,19 @@ import { getVideoSource } from '@/utils/video-utils';
 
 const { width } = Dimensions.get('window');
 
-const SingleMedia = ({ post, mutedVideos, toggleMute }) => {
+interface SingleMediaProps {
+  post: {
+    id: string;
+    media: {
+      type: 'image' | 'video';
+      url: string;
+    }[];
+  };
+  mutedVideos: Set<string>;
+  toggleMute: (postId: string) => void;
+}
+
+const SingleMedia = ({ post, mutedVideos, toggleMute }: SingleMediaProps) => {
   const media = post.media[0];
   
   if (media.type === 'video') {

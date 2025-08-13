@@ -1,34 +1,39 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
-  Text, 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
   Dimensions,
   StatusBar,
   Image,
-  Animated
+  Animated,
+  AppState
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import { Text } from '@/components/text';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ReelsScreen() {
   const [currentReel, setCurrentReel] = useState(0);
   const [likedReels, setLikedReels] = useState(new Set<number>());
-  const [videoDimensions, setVideoDimensions] = useState<{[key: number]: {width: number, height: number, aspectRatio: number}}>({});
+  const [videosReady, setVideosReady] = useState(new Set<number>());
+  const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const [appState, setAppState] = useState(AppState.currentState);
   const heartAnimations = useRef<{[key: number]: Animated.Value}>({}).current;
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  // Mock reels data with real Pexels videos (no overlay text)
+  // Mock reels data with working video URLs
   const reels = [
     {
       id: 1,
       username: 'sarah_fitness',
       displayName: 'Sarah Johnson',
       description: 'Morning workout routine 💪',
-      video: 'https://videos.pexels.com/video-files/3044681/3044681-uhd_2560_1440_24fps.mp4',
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
       likes: '847K',
       comments: '5,123',
       shares: '76.2K',
@@ -42,7 +47,7 @@ export default function ReelsScreen() {
       username: 'mike_adventures',
       displayName: 'Mike Chen',
       description: 'Amazing sunset views from the hike today 🌅',
-      video: 'https://videos.pexels.com/video-files/5752724/5752724-hd_720_1280_25fps.mp4',
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
       likes: '1.2M',
       comments: '8,947',
       shares: '145K',
@@ -56,7 +61,7 @@ export default function ReelsScreen() {
       username: 'alex_creates',
       displayName: 'Alex Martinez',
       description: 'Quick art tutorial for beginners ✨',
-      video: 'https://videos.pexels.com/video-files/4827401/4827401-hd_720_1280_30fps.mp4',
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
       likes: '623K',
       comments: '3,456',
       shares: '89.1K',
@@ -70,7 +75,7 @@ export default function ReelsScreen() {
       username: 'emma_lifestyle',
       displayName: 'Emma Wilson',
       description: 'Morning coffee routine ☕',
-      video: 'https://videos.pexels.com/video-files/6389759/6389759-hd_720_1280_30fps.mp4',
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
       likes: '934K',
       comments: '6,782',
       shares: '112K',
@@ -84,7 +89,7 @@ export default function ReelsScreen() {
       username: 'david_cooking',
       displayName: 'David Lee',
       description: 'Easy 5-minute pasta recipe 🍝',
-      video: 'https://videos.pexels.com/video-files/4638650/4638650-hd_720_1280_25fps.mp4',
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
       likes: '756K',
       comments: '4,321',
       shares: '98.3K',
@@ -92,196 +97,153 @@ export default function ReelsScreen() {
       isVerified: false,
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
       music: 'Cooking beats - kitchen vibes'
-    },
-    {
-      id: 6,
-      username: 'jessica_travel',
-      displayName: 'Jessica Brown',
-      description: 'Beautiful city lights at night ✨',
-      video: 'https://videos.pexels.com/video-files/3571264/3571264-uhd_1440_2732_25fps.mp4',
-      likes: '1.1M',
-      comments: '7,654',
-      shares: '134K',
-      isFollowing: false,
-      isVerified: false,
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=face',
-      music: 'City nights - electronic'
-    },
-    {
-      id: 7,
-      username: 'ryan_sports',
-      displayName: 'Ryan Taylor',
-      description: 'Basketball training session 🏀',
-      video: 'https://videos.pexels.com/video-files/5752729/5752729-hd_720_1280_25fps.mp4',
-      likes: '892K',
-      comments: '5,987',
-      shares: '87.5K',
-      isFollowing: true,
-      isVerified: true,
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=face',
-      music: 'Sports motivation - energetic'
-    },
-    {
-      id: 8,
-      username: 'maya_dance',
-      displayName: 'Maya Patel',
-      description: 'Quick dance routine to trending song 💃',
-      video: 'https://videos.pexels.com/video-files/4827462/4827462-hd_720_1280_30fps.mp4',
-      likes: '2.1M',
-      comments: '12.3K',
-      shares: '267K',
-      isFollowing: false,
-      isVerified: true,
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face',
-      music: 'Trending dance beat'
     }
   ];
 
-  // Create video players for background and main videos
-  const backgroundPlayers = reels.map((reel, index) => 
-    useVideoPlayer(reel.video, player => {
-      player.loop = true;
-      player.muted = true;
-      
-      // Listen for video load to get dimensions
-      player.addListener('statusChange', (status) => {
-        if (status.isLoaded && player.videoSize) {
-          const videoWidth = player.videoSize.width;
-          const videoHeight = player.videoSize.height;
-          const aspectRatio = videoWidth / videoHeight;
-          
-          setVideoDimensions(prev => ({
-            ...prev,
-            [reel.id]: {
-              width: videoWidth,
-              height: videoHeight,
-              aspectRatio: aspectRatio
-            }
-          }));
-        }
-      });
-    })
-  );
-
-  const mainPlayers = reels.map((reel, index) => 
-    useVideoPlayer(reel.video, player => {
-      player.loop = true;
-      player.muted = false;
-      
-      // Listen for video load to get dimensions (same as background)
-      player.addListener('statusChange', (status) => {
-        if (status.isLoaded && player.videoSize) {
-          const videoWidth = player.videoSize.width;
-          const videoHeight = player.videoSize.height;
-          const aspectRatio = videoWidth / videoHeight;
-          
-          setVideoDimensions(prev => ({
-            ...prev,
-            [reel.id]: {
-              width: videoWidth,
-              height: videoHeight,
-              aspectRatio: aspectRatio
-            }
-          }));
-        }
-      });
-    })
-  );
-
-  // Function to get dynamic styles based on video dimensions
-  const getVideoStyles = (reelId: number, isBackground: boolean = false) => {
-    const videoDim = videoDimensions[reelId];
-    const screenAspectRatio = width / height;
-    
-    if (!videoDim) {
-      // Default styles while loading
-      return isBackground ? styles.backgroundVideoDefault : styles.mainVideoDefault;
-    }
-    
-    const videoAspectRatio = videoDim.aspectRatio;
-    const isPortrait = videoAspectRatio < 1;
-    const isLandscape = videoAspectRatio > 1.5;
-    const isSquareish = videoAspectRatio >= 1 && videoAspectRatio <= 1.5;
-    
-    if (isBackground) {
-      // Background should always fill and be larger for blur effect
-      return {
-        width: width * 1.8,
-        height: height * 1.8,
-        position: 'absolute' as const,
-        opacity: 0.6,
-      };
-    } else {
-      // Main video adaptive sizing
-      if (isPortrait) {
-        // Portrait video - fill height, center horizontally
-        if (videoAspectRatio >= screenAspectRatio) {
-          // Video is wider relative to screen
-          return {
-            width: width,
-            height: width / videoAspectRatio,
-            alignSelf: 'center' as const,
-          };
-        } else {
-          // Video is taller relative to screen - perfect for mobile
-          return {
-            width: height * videoAspectRatio,
-            height: height,
-            alignSelf: 'center' as const,
-          };
-        }
-      } else if (isLandscape) {
-        // Landscape video - fit within screen bounds
-        return {
-          width: width,
-          height: width / videoAspectRatio,
-          alignSelf: 'center' as const,
-        };
-      } else {
-        // Square-ish video
-        return {
-          width: width,
-          height: width / videoAspectRatio,
-          alignSelf: 'center' as const,
-        };
+  // Create video players using useVideoPlayer hook properly (outside of any loops)
+  const player1 = useVideoPlayer(reels[0]?.video, (player) => {
+    player.loop = true;
+    player.muted = false;
+    player.addListener('statusChange', (status) => {
+      console.log('Player 1 status:', status);
+      if (status.status === 'readyToPlay' || status.status === 'loading') {
+        setVideosReady(prev => new Set([...prev, 0]));
       }
-    }
-  };
+    });
+  });
 
-  // Handle video playback based on current reel
+  const player2 = useVideoPlayer(reels[1]?.video, (player) => {
+    player.loop = true;
+    player.muted = false;
+    player.addListener('statusChange', (status) => {
+      console.log('Player 2 status:', status);
+      if (status.status === 'readyToPlay' || status.status === 'loading') {
+        setVideosReady(prev => new Set([...prev, 1]));
+      }
+    });
+  });
+
+  const player3 = useVideoPlayer(reels[2]?.video, (player) => {
+    player.loop = true;
+    player.muted = false;
+    player.addListener('statusChange', (status) => {
+      console.log('Player 3 status:', status);
+      if (status.status === 'readyToPlay' || status.status === 'loading') {
+        setVideosReady(prev => new Set([...prev, 2]));
+      }
+    });
+  });
+
+  const player4 = useVideoPlayer(reels[3]?.video, (player) => {
+    player.loop = true;
+    player.muted = false;
+    player.addListener('statusChange', (status) => {
+      console.log('Player 4 status:', status);
+      if (status.status === 'readyToPlay' || status.status === 'loading') {
+        setVideosReady(prev => new Set([...prev, 3]));
+      }
+    });
+  });
+
+  const player5 = useVideoPlayer(reels[4]?.video, (player) => {
+    player.loop = true;
+    player.muted = false;
+    player.addListener('statusChange', (status) => {
+      console.log('Player 5 status:', status);
+      if (status.status === 'readyToPlay' || status.status === 'loading') {
+        setVideosReady(prev => new Set([...prev, 4]));
+      }
+    });
+  });
+
+  // Array of players for easy access
+  const videoPlayers = [player1, player2, player3, player4, player5];
+
+  // Handle screen focus changes (when navigating between tabs)
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Reels screen focused');
+      setIsScreenFocused(true);
+      
+      return () => {
+        console.log('Reels screen unfocused - pausing all videos');
+        setIsScreenFocused(false);
+        // Pause all videos when leaving the screen
+        videoPlayers.forEach((player, index) => {
+          try {
+            player.pause();
+            console.log(`Paused video ${index} due to screen unfocus`);
+          } catch (error) {
+            console.error(`Error pausing video ${index}:`, error);
+          }
+        });
+      };
+    }, [])
+  );
+
+  // Handle app state changes (when app goes to background)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      backgroundPlayers.forEach((player, index) => {
-        try {
-          if (index === currentReel) {
-            player.play();
-          } else {
+    const handleAppStateChange = (nextAppState: any) => {
+      console.log('App state changed:', appState, '->', nextAppState);
+      
+      if (appState.match(/inactive|background/) && nextAppState === 'active') {
+        console.log('App has come to the foreground');
+        setAppState(nextAppState);
+      } else if (nextAppState.match(/inactive|background/)) {
+        console.log('App has gone to the background - pausing all videos');
+        // Pause all videos when app goes to background
+        videoPlayers.forEach((player, index) => {
+          try {
             player.pause();
+            console.log(`Paused video ${index} due to app background`);
+          } catch (error) {
+            console.error(`Error pausing video ${index}:`, error);
           }
-        } catch (error) {
-          console.log('Background player error:', error);
-        }
-      });
+        });
+      }
+      
+      setAppState(nextAppState);
+    };
 
-      mainPlayers.forEach((player, index) => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [appState]);
+
+  // Handle video playback based on current reel AND screen focus AND app state
+  useEffect(() => {
+    console.log('Video control effect triggered:', {
+      currentReel,
+      isScreenFocused,
+      appState
+    });
+    
+    const timer = setTimeout(() => {
+      videoPlayers.forEach((player, index) => {
         try {
-          if (index === currentReel) {
+          // Only play if screen is focused AND app is active AND it's the current reel
+          if (index === currentReel && isScreenFocused && appState === 'active') {
+            console.log(`Playing video ${index}`);
             player.play();
           } else {
+            console.log(`Pausing video ${index}`, {
+              isCurrentReel: index === currentReel,
+              isScreenFocused,
+              appState
+            });
             player.pause();
           }
         } catch (error) {
-          console.log('Main player error:', error);
+          console.error(`Error controlling video ${index}:`, error);
         }
       });
-    }, 100);
+    }, 150);
 
     return () => clearTimeout(timer);
-  }, [currentReel]);
+  }, [currentReel, isScreenFocused, appState]);
 
   const handleLikePress = (reelId: number) => {
     if (!heartAnimations[reelId]) {
-      heartAnimations[reelId] = new Animated.Value(0);
+      heartAnimations[reelId] = new Animated.Value(1);
     }
 
     const isLiked = likedReels.has(reelId);
@@ -310,6 +272,16 @@ export default function ReelsScreen() {
     }
   };
 
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const newIndex = Math.round(offsetY / height);
+    
+    if (newIndex !== currentReel && newIndex >= 0 && newIndex < reels.length) {
+      console.log(`Scrolling to reel ${newIndex}`);
+      setCurrentReel(newIndex);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
@@ -318,59 +290,52 @@ export default function ReelsScreen() {
       <View style={styles.topHeader}>
         <View style={styles.headerTabs}>
           <Text style={styles.reelsTitle}>Reels</Text>
-          <Text style={styles.friendsTitle}>Friends</Text>
-        </View>
-        <View style={styles.headerIcons}>
-          <View style={styles.friendsAvatars}>
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face' }}
-              style={styles.friendAvatar}
-            />
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1494790108755-2616c041171b?w=30&h=30&fit=crop&crop=face' }}
-              style={[styles.friendAvatar, { marginLeft: -8 }]}
-            />
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=30&h=30&fit=crop&crop=face' }}
-              style={[styles.friendAvatar, { marginLeft: -8 }]}
-            />
-          </View>
         </View>
       </View>
       
       <ScrollView 
+        ref={scrollViewRef}
         pagingEnabled
         showsVerticalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {
-          const newIndex = Math.round(e.nativeEvent.contentOffset.y / height);
-          setCurrentReel(newIndex);
-        }}
+        onMomentumScrollEnd={handleScroll}
         style={styles.scrollView}
+        decelerationRate="fast"
       >
         {reels.map((reel, index) => (
           <View key={reel.id} style={styles.reelContainer}>
-            {/* Dynamic Blurred Background */}
+            {/* Background Blurred Video - Always fills screen */}
             <View style={styles.backgroundVideoContainer}>
               <VideoView
-                style={getVideoStyles(reel.id, true)}
-                player={backgroundPlayers[index]}
+                style={styles.backgroundVideo}
+                player={videoPlayers[index]}
                 contentFit="cover"
                 nativeControls={false}
               />
-              <View style={styles.blurOverlay} />
+              {/* Multiple blur overlays for better effect */}
+              <View style={styles.blurOverlay1} />
               <View style={styles.blurOverlay2} />
               <View style={styles.blurOverlay3} />
             </View>
 
-            {/* Dynamic Main Video Container */}
+            {/* Main Video Container - Centered and properly sized */}
             <View style={styles.mainVideoContainer}>
               <VideoView
-                style={getVideoStyles(reel.id, false)}
-                player={mainPlayers[index]}
+                style={styles.mainVideo}
+                player={videoPlayers[index]}
                 contentFit="contain"
                 nativeControls={false}
               />
+              
+              {/* Loading indicator */}
+              {!videosReady.has(index) && (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingText}>Loading...</Text>
+                </View>
+              )}
             </View>
+
+            {/* Bottom gradient for text readability */}
+            <View style={styles.bottomGradient} />
 
             {/* Side Actions */}
             <View style={styles.sideActions}>
@@ -407,22 +372,6 @@ export default function ReelsScreen() {
               
               <TouchableOpacity style={styles.actionButton}>
                 <Feather name="more-horizontal" size={28} color="#fff" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.profilePicture}>
-                <Image source={{ uri: reel.avatar }} style={styles.avatarImage} />
-                {!reel.isFollowing && (
-                  <View style={styles.followPlusButton}>
-                    <Feather name="plus" size={12} color="#fff" />
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.musicButton}>
-                <Image 
-                  source={{ uri: reel.avatar }}
-                  style={styles.musicIcon}
-                />
               </TouchableOpacity>
             </View>
 
@@ -485,26 +434,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginRight: 24,
   },
-  friendsTitle: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 20,
-    fontWeight: '400',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  friendsAvatars: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  friendAvatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
   scrollView: {
     flex: 1,
   },
@@ -513,47 +442,79 @@ const styles = StyleSheet.create({
     height: height,
     position: 'relative',
     backgroundColor: '#000',
+    overflow: 'hidden',
   },
+  
+  // Background video styles - fills entire screen and gets blurred
   backgroundVideoContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
-  // Default styles for videos while loading
-  backgroundVideoDefault: {
-    width: width * 1.8,
-    height: height * 1.8,
+  backgroundVideo: {
+    width: width * 2,
+    height: height * 2,
     position: 'absolute',
-    opacity: 0.6,
   },
-  mainVideoDefault: {
-    width: width,
-    height: height,
-  },
-  blurOverlay: {
+  blurOverlay1: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   blurOverlay2: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(20px)',
   },
   blurOverlay3: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backdropFilter: 'blur(15px)',
   },
+  
+  // Main video styles - full height coverage
   mainVideoContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
   },
+  mainVideo: {
+    width: width,
+    height: height,
+    maxWidth: width,
+    maxHeight: height,
+  },
+  
+  loadingContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 2,
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  
+  bottomGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+
+    zIndex: 1,
+  },
+  
   sideActions: {
     position: 'absolute',
     right: 12,
     bottom: 120,
     alignItems: 'center',
-    zIndex: 2,
+    zIndex: 3,
   },
   actionButton: {
     alignItems: 'center',
@@ -568,53 +529,12 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  profilePicture: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginTop: 20,
-    position: 'relative',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  followPlusButton: {
-    position: 'absolute',
-    bottom: -6,
-    left: '50%',
-    marginLeft: -10,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#FF3040',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  musicButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginTop: 16,
-  },
-  musicIcon: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#fff',
-  },
   bottomContent: {
     position: 'absolute',
     bottom: 120,
     left: 16,
     right: 80,
-    zIndex: 2,
+    zIndex: 3,
   },
   userInfo: {
     marginBottom: 8,

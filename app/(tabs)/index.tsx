@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   StyleSheet, 
@@ -7,21 +7,24 @@ import {
   StatusBar, 
   TouchableOpacity,
   Image,
+  Animated,
 } from 'react-native';
 import { Text } from '@/components/text';
 import { useRouter } from 'expo-router';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import StoryViewer from '@/components/story-viewer';
 import CommentsModal from '@/components/comments-modal';
+import ShareModal from '@/components/share-modal';
 import CarouselPost from '@/components/carousel-post';
 import SingleMedia from '@/components/single-media';
 import StoriesSection from '@/components/stories-section';
 import SuggestedUsers from '@/components/suggested-users';
+import AnimatedHeart from '@/components/animated-heart';
 import { renderTextWithHashtags } from '@/utils/text-utils';
 import { storyUsers, suggestedUsers, feedPosts } from '@/data/mock-data';
 
 // Helper function to format like counts
-const formatLikes = (count) => {
+const formatLikes = (count: any) => {
   if (count >= 1000000) {
     return `${(count / 1000000).toFixed(1)}M`;
   } else if (count >= 1000) {
@@ -36,10 +39,14 @@ export default function HomeScreen() {
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
   const [selectedUserIndex, setSelectedUserIndex] = useState(0);
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState('');
-  const [likedPosts, setLikedPosts] = useState(new Set());
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
-  const [mutedVideos, setMutedVideos] = useState(new Set());
+  const [likedPosts, setLikedPosts] = useState(new Set<string>());
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set<string>());
+  const [mutedVideos, setMutedVideos] = useState(new Set<string>());
+  
+  // Animation for overlay
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
 
   // Convert story users to legacy format for display
   const stories = storyUsers.map(user => ({
@@ -57,9 +64,12 @@ export default function HomeScreen() {
   const navigateToNotifications = () => {
     router.push('/notifications');
   };
-  
 
-  const openStoryViewer = (userIndex) => {
+  const navigateToProfile = (username: string) => {
+    router.push(`/account/${username}`);
+  };
+  
+  const openStoryViewer = (userIndex: any) => {
     setSelectedUserIndex(userIndex);
     setSelectedStoryIndex(0);
     setStoryViewerVisible(true);
@@ -69,16 +79,53 @@ export default function HomeScreen() {
     setStoryViewerVisible(false);
   };
 
-  const openComments = (postId) => {
+  const openComments = (postId: any) => {
     setSelectedPostId(postId);
     setCommentsModalVisible(true);
+    
+    // Quick fade in animation
+    Animated.timing(overlayOpacity, {
+      toValue: 1,
+      duration: 150, // Fast fade in
+      useNativeDriver: true,
+    }).start();
   };
 
   const closeComments = () => {
-    setCommentsModalVisible(false);
+    // Quick fade out animation
+    Animated.timing(overlayOpacity, {
+      toValue: 0,
+      duration: 100, // Even faster fade out
+      useNativeDriver: true,
+    }).start(() => {
+      setCommentsModalVisible(false);
+    });
   };
 
-  const toggleLike = (postId) => {
+  const openShare = (postId: any) => {
+    setSelectedPostId(postId);
+    setShareModalVisible(true);
+    
+    // Quick fade in animation
+    Animated.timing(overlayOpacity, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeShare = () => {
+    // Quick fade out animation
+    Animated.timing(overlayOpacity, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(() => {
+      setShareModalVisible(false);
+    });
+  };
+
+  const toggleLike = (postId: any) => {
     const newLikedPosts = new Set(likedPosts);
     if (newLikedPosts.has(postId)) {
       newLikedPosts.delete(postId);
@@ -88,7 +135,7 @@ export default function HomeScreen() {
     setLikedPosts(newLikedPosts);
   };
 
-  const toggleBookmark = (postId) => {
+  const toggleBookmark = (postId: any) => {
     const newBookmarkedPosts = new Set(bookmarkedPosts);
     if (newBookmarkedPosts.has(postId)) {
       newBookmarkedPosts.delete(postId);
@@ -98,7 +145,7 @@ export default function HomeScreen() {
     setBookmarkedPosts(newBookmarkedPosts);
   };
 
-  const toggleMute = (videoId) => {
+  const toggleMute = (videoId: any) => {
     const newMutedVideos = new Set(mutedVideos);
     if (newMutedVideos.has(videoId)) {
       newMutedVideos.delete(videoId);
@@ -112,151 +159,168 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('@/assets/logo/instagram.png')}
-              style={styles.logoImage}
-       
-            />
-            
-          </View>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton} onPress={navigateToNotifications}>
-              <AntDesign name="hearto" size={24} color="#000" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} onPress={navigateToMessages}>
-              <Feather name="send" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Stories */}
-        <StoriesSection stories={stories} onStoryPress={openStoryViewer} />
-
-        {/* Suggested Users */}
-        <SuggestedUsers users={suggestedUsers} />
-
-        {/* Feed Posts */}
-        {feedPosts.map((post) => (
-          <View key={post.id} style={styles.feedPost}>
-            {/* Post Header */}
-            <View style={styles.postHeader}>
-              <View style={styles.postUserInfo}>
-                <Image 
-                  source={{ uri: post.avatar }} 
-                  style={styles.postAvatar}
-                  onError={() => console.log('Post avatar failed to load')}
-                />
-                <View style={styles.postUserDetails}>
-                  <View style={styles.usernameRow}>
-                    <Text style={styles.postUsername}>{post.username}</Text>
-                    {post.isVerified && (
-                      <AntDesign name="checkcircle" size={14} color="#0095F6" style={{ marginLeft: 4 }} />
-                    )}
-                  </View>
-                  {post.suggestedText && (
-                    <Text style={styles.suggestedText}>{post.suggestedText}</Text>
-                  )}
-                  {post.musicTitle && (
-                    <View style={styles.musicInfo}>
-                    
-                      <Text style={styles.musicTitle}>{post.musicTitle}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-              <View style={styles.postActions}>
-                <TouchableOpacity style={styles.followButtonSmall}>
-                  <Text style={styles.followButtonSmallText}>Follow</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.moreButton}>
-                  <Text style={styles.moreIcon}>⋯</Text>
-                </TouchableOpacity>
-              </View>
+      {/* Main Content Container */}
+      <View style={styles.contentContainer}>
+        <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require('@/assets/logo/instagram.png')}
+                style={styles.logoImage}
+              />
             </View>
-
-            {/* Post Media - Carousel or Single */}
-            {post.type === 'carousel' ? (
-              <CarouselPost 
-                post={post} 
-                likedPosts={likedPosts}
-                toggleLike={toggleLike}
-                mutedVideos={mutedVideos}
-                toggleMute={toggleMute}
-              />
-            ) : (
-              <SingleMedia 
-                post={post}
-                mutedVideos={mutedVideos}
-                toggleMute={toggleMute}
-              />
-            )}
-
-            {/* Post Actions */}
-            <View style={styles.postActionsBar}>
-              <View style={styles.leftActions}>
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => toggleLike(post.id)}
-                >
-                  <AntDesign 
-                    name={likedPosts.has(post.id) ? "heart" : "hearto"} 
-                    size={24} 
-                    color={likedPosts.has(post.id) ? "#FF3040" : "#000"} 
-                  />
-                </TouchableOpacity>
-                <Text style={styles.engagementCount}>
-                  {formatLikes(post.likes + (likedPosts.has(post.id) ? 1 : 0))}
-                </Text>
-                
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => openComments(post.id)}
-                >
-                  <Feather name="message-circle" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.engagementCount}>
-                  {formatLikes(post.comments)}
-                </Text>
-                
-                <TouchableOpacity style={styles.actionButton}>
-                  <Feather name="send" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.engagementCount}>
-                  {formatLikes(post.shares)}
-                </Text>
-              </View>
-              
-              <TouchableOpacity 
-                style={styles.bookmarkButton}
-                onPress={() => toggleBookmark(post.id)}
-              >
-                <Feather 
-                  name={bookmarkedPosts.has(post.id) ? "bookmark" : "bookmark"} 
-                  size={24} 
-                  color="#000" 
-                  fill={bookmarkedPosts.has(post.id) ? "#000" : "none"}
-                />
+            <View style={styles.headerIcons}>
+              <TouchableOpacity style={styles.iconButton} onPress={navigateToNotifications}>
+                <AntDesign name="hearto" size={24} color="#000" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton} onPress={navigateToMessages}>
+                <Feather name="send" size={24} color="#000" />
               </TouchableOpacity>
             </View>
-
-            {/* Post Info */}
-            <View style={styles.postInfo}>
-              <View style={styles.captionContainer}>
-                <Text>
-                  <Text style={styles.captionUsername}>{post.username}</Text>
-                  <Text style={styles.captionText}> </Text>
-                  {renderTextWithHashtags(post.caption, styles.captionText, styles.hashtag)}
-                </Text>
-              </View>
-              <Text style={styles.postTimestamp}>{post.timestamp} ago</Text>
-            </View>
           </View>
-        ))}
-      </ScrollView>
+
+          {/* Stories */}
+          <StoriesSection stories={stories} onStoryPress={openStoryViewer} />
+
+          {/* Suggested Users */}
+          <SuggestedUsers users={suggestedUsers} />
+
+          {/* Feed Posts */}
+          {feedPosts.map((post) => (
+            <View key={post.id} style={styles.feedPost}>
+              {/* Post Header */}
+              <View style={styles.postHeader}>
+                <View style={styles.postUserInfo}>
+                  <TouchableOpacity onPress={() => navigateToProfile(post.username)}>
+                    <Image 
+                      source={{ uri: post.avatar }} 
+                      style={styles.postAvatar}
+                      onError={() => console.log('Post avatar failed to load')}
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.postUserDetails}>
+                    <View style={styles.usernameRow}>
+                      <TouchableOpacity onPress={() => navigateToProfile(post.username)}>
+                        <View style={styles.usernameContainer}>
+                          <Text style={styles.postUsername}>{post.username}</Text>
+                          {post.isVerified && (
+                            <AntDesign name="checkcircle" size={14} color="#0095F6" style={{ marginLeft: 4 }} />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                    {post.suggestedText && (
+                      <Text style={styles.suggestedText}>{post.suggestedText}</Text>
+                    )}
+                    {post.musicTitle && (
+                      <View style={styles.musicInfo}>
+                        <Text style={styles.musicTitle}>{post.musicTitle}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.postActions}>
+                  <TouchableOpacity style={styles.followButtonSmall}>
+                    <Text style={styles.followButtonSmallText}>Follow</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.moreButton}>
+                    <Text style={styles.moreIcon}>⋯</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Post Media - Carousel or Single */}
+              {post.type === 'carousel' ? (
+                <CarouselPost 
+                  post={post} 
+                  likedPosts={likedPosts}
+                  toggleLike={toggleLike}
+                  mutedVideos={mutedVideos}
+                  toggleMute={toggleMute}
+                />
+              ) : (
+                <SingleMedia 
+                  post={{
+                    id: post.id,
+                    media: post.media.map(item => ({
+                      ...item,
+                      type: item.type as 'image' | 'video'
+                    }))
+                  }}
+                  mutedVideos={mutedVideos}
+                  toggleMute={toggleMute}
+                />
+              )}
+
+              {/* Post Actions */}
+              <View style={styles.postActionsBar}>
+                <View style={styles.leftActions}>
+                  <AnimatedHeart
+                    isLiked={likedPosts.has(post.id)}
+                    onPress={() => toggleLike(post.id)}
+                    size={24}
+                  />
+                  <Text style={styles.engagementCount}>
+                    {formatLikes(post.likes + (likedPosts.has(post.id) ? 1 : 0))}
+                  </Text>
+                  
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => openComments(post.id)}
+                  >
+                    <Feather name="message-circle" size={22} color="#000" />
+                  </TouchableOpacity>
+                  <Text style={styles.engagementCount}>
+                    {formatLikes(post.comments)}
+                  </Text>
+                  
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => openShare(post.id)}
+                  >
+                    <Feather name="send" size={20} color="#000" />
+                  </TouchableOpacity>
+                  <Text style={styles.engagementCount}>
+                    {formatLikes(post.shares)}
+                  </Text>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.bookmarkButton}
+                  onPress={() => toggleBookmark(post.id)}
+                >
+                  <Feather 
+                    name="bookmark" 
+                    size={24} 
+                    color={bookmarkedPosts.has(post.id) ? "#000" : "#000"}
+                    fill={bookmarkedPosts.has(post.id) ? "#000" : "none"}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Post Info */}
+              <View style={styles.postInfo}>
+                <View style={styles.captionContainer}>
+                  <Text>
+                    <TouchableOpacity onPress={() => navigateToProfile(post.username)}>
+                      <Text style={styles.captionUsername}>{post.username}</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.captionText}> </Text>
+                    {renderTextWithHashtags(post.caption, styles.captionText, styles.hashtag)}
+                  </Text>
+                </View>
+                <Text style={styles.postTimestamp}>{post.timestamp} ago</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Overlay when comments or share modal are open */}
+        {(commentsModalVisible || shareModalVisible) && (
+          <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]} />
+        )}
+      </View>
 
       {/* Modals */}
       <StoryViewer
@@ -273,6 +337,12 @@ export default function HomeScreen() {
         postId={selectedPostId}
         comments={[]}
       />
+
+      <ShareModal
+        visible={shareModalVisible}
+        onClose={closeShare}
+        postId={selectedPostId}
+      />
     </SafeAreaView>
   );
 }
@@ -282,8 +352,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  contentContainer: {
+    flex: 1,
+    position: 'relative',
+  },
   mainContainer: {
     flex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    zIndex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -298,7 +377,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoImage: {
-    height: 30,
+    height: 40,
     width: 120,
   },
   dropdownIcon: {
@@ -339,6 +418,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   usernameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  usernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -402,7 +485,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionButton: {
-    marginRight: 8,
+    marginRight: 4,
   },
   engagementCount: {
     fontSize: 14,

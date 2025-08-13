@@ -1,6 +1,5 @@
 import { Text } from "@/components/text";
 import { Feather } from "@expo/vector-icons";
-import type { Icon } from "@expo/vector-icons/build/createIconSet";
 import React, { useRef, useState } from "react";
 import {
   Animated,
@@ -13,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRouter } from 'expo-router'; // Add this import
 
 const { width } = Dimensions.get("window");
 const itemWidth = (width - 2) / 3; // 3 columns with 1px gaps
@@ -20,6 +20,7 @@ const itemWidth = (width - 2) / 3; // 3 columns with 1px gaps
 export default function ProfileScreen() {
   const [selectedTab, setSelectedTab] = useState("posts");
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const router = useRouter(); // Add this line
 
   // Updated profile data to match the image
   const profileData = {
@@ -94,6 +95,11 @@ export default function ProfileScreen() {
     setSelectedTab(tabId);
   };
 
+  // Add navigation function for settings
+  const navigateToSettings = () => {
+    router.push('/settings');
+  };
+
   const renderPostsTab = () => (
     <View style={styles.postsGrid}>
       {posts.map((post) => (
@@ -166,7 +172,7 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.headerButton}>
             <Feather name="plus-square" size={24} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={navigateToSettings}>
             <Feather name="menu" size={24} color="#000" />
           </TouchableOpacity>
         </View>
@@ -391,13 +397,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 3,
     borderColor: "white",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 3,
   },
   plusButtonInner: {

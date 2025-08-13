@@ -1,6 +1,6 @@
+import React, { useState } from 'react';
 import {
   View,
-
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
@@ -13,157 +13,47 @@ import {
 } from 'react-native';
 import { Text } from '@/components/text';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-
 import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
+import { conversations, type Message } from '@/data/conversations-data';
 
 export default function ChatScreen() {
   const router = useRouter();
   const { chatId, username } = useLocalSearchParams<{ chatId: string; username: string }>();
   const [messageInput, setMessageInput] = useState('');
 
-  // Define chat data type
-  type ChatDataType = {
-    [key: string]: {
-      username: string | string[];
-      handle: string;
-      avatar: string;
-      messages: Array<{
-        id: number;
-        text: string;
-        sender: string;
-        timestamp: string;
-        type: string;
-      }>;
-    }
-  };
-
-  // Mock chat data based on chatId
-  const getChatData = (id: string) => {
-    const chatData: ChatDataType = {
-      'owen': {
-        username: 'Owen',
-        handle: 'owenk1ng',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
-        messages: [
-          {
-            id: 1,
-            text: 'Of course u liked this',
-            sender: 'other',
-            timestamp: '2:30 PM',
-            type: 'text'
-          },
-          {
-            id: 2,
-            text: 'you know how i do things',
-            sender: 'me',
-            timestamp: '2:31 PM',
-            type: 'text'
-          },
-          {
-            id: 3,
-            text: 'You the man of men',
-            sender: 'other',
-            timestamp: '2:32 PM',
-            type: 'text'
-          },
-          {
-            id: 4,
-            text: 'bro',
-            sender: 'me',
-            timestamp: '2:33 PM',
-            type: 'text'
-          },
-          {
-            id: 5,
-            text: 'lets get serious',
-            sender: 'me',
-            timestamp: '2:33 PM',
-            type: 'text'
-          },
-          {
-            id: 6,
-            text: 'no more dilly dallying',
-            sender: 'me',
-            timestamp: '2:33 PM',
-            type: 'text'
-          },
-          {
-            id: 7,
-            text: 'Come up to my cottage',
-            sender: 'other',
-            timestamp: '2:34 PM',
-            type: 'text'
-          },
-          {
-            id: 8,
-            text: 'Stop trolling',
-            sender: 'other',
-            timestamp: '2:35 PM',
-            type: 'text'
-          },
-          {
-            id: 9,
-            text: 'i live under a bridge bro',
-            sender: 'me',
-            timestamp: '2:36 PM',
-            type: 'text'
-          },
-          {
-            id: 10,
-            text: 'Deadass tho',
-            sender: 'other',
-            timestamp: '2:37 PM',
-            type: 'text'
-          },
-          {
-            id: 11,
-            text: 'Not joking',
-            sender: 'other',
-            timestamp: '2:37 PM',
-            type: 'text'
-          },
-          {
-            id: 12,
-            text: 'Come w almer or marko or some shit or just dolo',
-            sender: 'other',
-            timestamp: '2:38 PM',
-            type: 'text'
-          }
-        ]
+  // Find the conversation data
+  const conversation = conversations.find(conv => conv.id === chatId);
+  
+  // Fallback if conversation not found
+  const defaultConversation = {
+    id: chatId || 'default',
+    username: username || 'User',
+    handle: 'username',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    lastMessage: '',
+    timestamp: '',
+    unread: false,
+    messages: [
+      {
+        id: 1,
+        text: 'Hey there!',
+        sender: 'other' as const,
+        timestamp: '1:00 PM',
+        type: 'text' as const
       },
-      // Default fallback
-      'default': {
-        username: username || 'User',
-        handle: 'username',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-        messages: [
-          {
-            id: 1,
-            text: 'Hey there!',
-            sender: 'other',
-            timestamp: '1:00 PM',
-            type: 'text'
-          },
-          {
-            id: 2,
-            text: 'Hello! How are you?',
-            sender: 'me',
-            timestamp: '1:01 PM',
-            type: 'text'
-          }
-        ]
+      {
+        id: 2,
+        text: 'Hello! How are you?',
+        sender: 'me' as const,
+        timestamp: '1:01 PM',
+        type: 'text' as const
       }
-    };
-
-    return chatData[id] || chatData['default'];
+    ]
   };
 
-  const chat = getChatData(chatId);
+  const chat = conversation || defaultConversation;
 
-
-
-  const renderMessage = (message:any) => {
+  const renderMessage = (message: Message) => {
     const isMe = message.sender === 'me';
     
     return (
@@ -178,12 +68,16 @@ export default function ChatScreen() {
           styles.messageBubble,
           isMe ? styles.myMessageBubble : styles.otherMessageBubble
         ]}>
-          <Text style={[
-            styles.messageText,
-            isMe ? styles.myMessageText : styles.otherMessageText
-          ]}>
-            {message.text}
-          </Text>
+          {message.type === 'image' && message.imageUrl ? (
+            <Image source={{ uri: message.imageUrl }} style={styles.messageImage} />
+          ) : (
+            <Text style={[
+              styles.messageText,
+              isMe ? styles.myMessageText : styles.otherMessageText
+            ]}>
+              {message.text}
+            </Text>
+          )}
         </View>
       </View>
     );
@@ -227,14 +121,16 @@ export default function ChatScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.messagesContent}
           >
-            {/* Shared Media */}
-            <View style={styles.sharedMedia}>
-              <View style={styles.mediaItem}>
-                <View style={styles.mediaIcon}>
-                  <Feather name="play" size={20} color="#fff" />
+            {/* Shared Media - only show if Emma Davis */}
+            {chat.id === 'emma-davis' && (
+              <View style={styles.sharedMedia}>
+                <View style={styles.mediaItem}>
+                  <View style={styles.mediaIcon}>
+                    <Feather name="play" size={20} color="#fff" />
+                  </View>
                 </View>
               </View>
-            </View>
+            )}
 
             {/* Messages */}
             {chat.messages.map(renderMessage)}
@@ -378,6 +274,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
+    overflow: 'hidden',
   },
   myMessageBubble: {
     backgroundColor: '#8B5CF6',
@@ -396,6 +293,12 @@ const styles = StyleSheet.create({
   },
   otherMessageText: {
     color: '#000',
+  },
+  messageImage: {
+    width: 200,
+    height: 150,
+    borderRadius: 12,
+    resizeMode: 'cover',
   },
   timestamp: {
     textAlign: 'center',

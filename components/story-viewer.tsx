@@ -16,7 +16,8 @@ const { width, height } = Dimensions.get('window');
 
 interface Story {
   id: string;
-  image: string;
+  type: string;
+  media: string; // Changed from 'image' to 'media' to match your data
   timestamp: string;
 }
 
@@ -181,6 +182,10 @@ export default function StoryViewer({
 
   if (!visible || !currentUser || !currentStory) return null;
 
+  // Debug logging to help troubleshoot
+  console.log('Current story media:', currentStory.media);
+  console.log('Story type:', currentStory.type);
+
   return (
     <Modal
       visible={visible}
@@ -198,12 +203,27 @@ export default function StoryViewer({
             }
           ]}
         >
-          {/* Background Image */}
-          <Image 
-            source={{ uri: currentStory.image }} 
-            style={styles.storyImage}
-            resizeMode="cover"
-          />
+          {/* Background Image/Video */}
+          {currentStory.type === 'video' ? (
+            // For videos, you'll need to implement video player
+            // For now, showing a placeholder
+            <View style={styles.videoPlaceholder}>
+              <Text style={styles.videoPlaceholderText}>Video: {currentStory.media}</Text>
+            </View>
+          ) : (
+            <Image 
+              source={{ uri: currentStory.media }} 
+              style={styles.storyImage}
+              resizeMode="cover"
+              onError={(error) => {
+                console.log('Image load error:', error.nativeEvent.error);
+                console.log('Failed URL:', currentStory.media);
+              }}
+              onLoad={() => {
+                console.log('Image loaded successfully:', currentStory.media);
+              }}
+            />
+          )}
 
           {/* Dark overlay */}
           <View style={styles.overlay} />
@@ -297,6 +317,19 @@ const styles = StyleSheet.create({
   storyImage: {
     width: '100%',
     height: '100%',
+  },
+  videoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoPlaceholderText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
