@@ -291,10 +291,10 @@ export default function HomeScreen() {
                   onPress={() => toggleBookmark(post.id)}
                 >
                   <Feather 
-                    name="bookmark" 
+                    name={bookmarkedPosts.has(post.id) ? "bookmark" : "bookmark"} 
                     size={24} 
-                    color={bookmarkedPosts.has(post.id) ? "#000" : "#000"}
-                    fill={bookmarkedPosts.has(post.id) ? "#000" : "none"}
+                    color="#000"
+                    fill={bookmarkedPosts.has(post.id) ? "#000" : "transparent"}
                   />
                 </TouchableOpacity>
               </View>
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   bookmarkButton: {
-    // No special styling needed
+    
   },
   postInfo: {
     paddingHorizontal: 16,
