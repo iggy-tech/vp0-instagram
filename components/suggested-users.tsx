@@ -10,8 +10,16 @@ import {
 import { Text } from '@/components/text';
 
 
+interface SuggestedUser {
+  id: string;
+  username: string;
+  category: string;
+  image: string;
+  isVerified: boolean;
+  isCompany?: boolean;
+}
 
-const SuggestedUsers = ({ users }) => {
+const SuggestedUsers = ({ users }: { users: SuggestedUser[] }) => {
   return (
     <View style={styles.suggestedSection}>
       <View style={styles.suggestedHeader}>
@@ -26,7 +34,7 @@ const SuggestedUsers = ({ users }) => {
         showsHorizontalScrollIndicator={false}
         style={styles.suggestedContainer}
       >
-        {users.map((user) => (
+        {users.map((user:any) => (
           <View key={user.id} style={styles.suggestedUser}>
             <TouchableOpacity style={styles.dismissButton}>
               <Text style={styles.dismissIcon}>✕</Text>
@@ -35,7 +43,7 @@ const SuggestedUsers = ({ users }) => {
             <View style={styles.suggestedAvatar}>
               {user.isCompany ? (
                 <View style={styles.companyAvatar}>
-                  <Text style={styles.companyText}>SGAG</Text>
+                  <Text style={styles.companyText}>Lotus</Text>
                 </View>
               ) : (
                 <Image 

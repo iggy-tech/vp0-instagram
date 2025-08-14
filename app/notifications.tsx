@@ -37,7 +37,7 @@ export default function NotificationsScreen() {
     {
       id: 2,
       type: 'suggestion',
-      username: 'financewithbasil',
+      username: 'code_with_kam',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
       message: 'You have 4 mutuals.',
       time: '1d',

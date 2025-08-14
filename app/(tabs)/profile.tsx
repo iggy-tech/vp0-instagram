@@ -162,7 +162,7 @@ export default function ProfileScreen() {
               color="#000"
               style={styles.chevronIcon}
             />
-            {profileData.isLive && <View style={styles.liveDot} />}
+          
           </TouchableOpacity>
         </View>
         <View style={styles.headerRight}>
@@ -322,15 +322,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  liveDot: {
-    position: "absolute",
-    top: -2,
-    right: -8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#FF3040",
-  },
+
   scrollContainer: {
     flex: 1,
   },

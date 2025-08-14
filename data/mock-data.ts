@@ -162,16 +162,16 @@ export const storyUsers = [
 export const suggestedUsers = [
   { 
     id: '1', 
-    username: 'Nadine', 
+    username: 'Sam', 
     category: 'Popular', 
     image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
     isVerified: false 
   },
   { 
     id: '2', 
-    username: 'SGAG', 
+    username: 'Foryn', 
     category: 'Popular', 
-    image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
+    image: 'https://plus.unsplash.com/premium_photo-1749751600727-3fb5c8af5c29?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     isVerified: true,
     isCompany: true
   },

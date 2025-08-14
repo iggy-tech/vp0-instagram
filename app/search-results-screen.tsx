@@ -12,7 +12,10 @@ import {
 import { Text } from '@/components/text';
 import { Feather } from '@expo/vector-icons';
 
-export default function SearchResultsScreen({ onBack }) {
+
+
+
+export default function SearchResultsScreen({ onBack }: { onBack: () => void }) {
   const [searchText, setSearchText] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -38,7 +41,7 @@ export default function SearchResultsScreen({ onBack }) {
       username: 'sarah_johnson',
       displayName: 'Sarah Johnson',
       subtitle: 'Followed by mike_davis',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616c041171b?w=100&h=100&fit=crop&crop=face',
+      avatar: 'https://images.unsplash.com/photo-1753701718038-93e51d416a4f?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       verified: false,
     },
     {
@@ -170,7 +173,7 @@ export default function SearchResultsScreen({ onBack }) {
 
   const sectionTitle = searchText.trim() === '' ? 'Recent' : 'Results';
 
-  const renderUserItem = (user) => (
+  const renderUserItem = (user:any) => (
     <TouchableOpacity key={user.id} style={styles.userItem}>
       <View style={styles.userLeft}>
         <View style={[styles.avatarContainer, user.hasStory && styles.storyBorder]}>
@@ -328,8 +331,7 @@ const styles = StyleSheet.create({
   storyBorder: {
     padding: 2,
     borderRadius: 25,
-    background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
-    // For React Native, we'll use a colored border as an approximation
+   
     borderWidth: 2,
     borderColor: '#E1306C',
   },
