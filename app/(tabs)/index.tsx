@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Text } from '@/components/text';
 import { useRouter } from 'expo-router';
-import { Feather, AntDesign } from '@expo/vector-icons';
+import { Feather, AntDesign, FontAwesome } from '@expo/vector-icons';
 import StoryViewer from '@/components/story-viewer';
 import CommentsModal from '@/components/comments-modal';
 import ShareModal from '@/components/share-modal';
@@ -173,9 +173,15 @@ export default function HomeScreen() {
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconButton} onPress={navigateToNotifications}>
                 <AntDesign name="hearto" size={24} color="#000" />
+                {/* Red dot for notifications */}
+                <View style={styles.notificationDot} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={navigateToMessages}>
                 <Feather name="send" size={24} color="#000" />
+                {/* Red badge with number for messages */}
+                <View style={styles.messageBadge}>
+                  <Text style={styles.badgeText}>1</Text>
+                </View>
               </TouchableOpacity>
             </View>
           </View>
@@ -286,30 +292,33 @@ export default function HomeScreen() {
                   </Text>
                 </View>
                 
-                <TouchableOpacity 
-                  style={styles.bookmarkButton}
-                  onPress={() => toggleBookmark(post.id)}
-                >
-                  <Feather 
-                    name={bookmarkedPosts.has(post.id) ? "bookmark" : "bookmark"} 
-                    size={24} 
-                    color="#000"
-                    fill={bookmarkedPosts.has(post.id) ? "#000" : "transparent"}
-                  />
-                </TouchableOpacity>
+<TouchableOpacity 
+  style={styles.bookmarkButton}
+  onPress={() => toggleBookmark(post.id)}
+>
+  <FontAwesome 
+    name={bookmarkedPosts.has(post.id) ? "bookmark" : "bookmark-o"} 
+    size={24} 
+    color={bookmarkedPosts.has(post.id) ? "#FFD700" : "#000"}
+  />
+</TouchableOpacity>
+
               </View>
 
               {/* Post Info */}
               <View style={styles.postInfo}>
-                <View style={styles.captionContainer}>
-                  <Text>
-                    <TouchableOpacity onPress={() => navigateToProfile(post.username)}>
-                      <Text style={styles.captionUsername}>{post.username}</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.captionText}> </Text>
-                    {renderTextWithHashtags(post.caption, styles.captionText, styles.hashtag)}
-                  </Text>
-                </View>
+            <View style={styles.captionContainer}>
+  <Text style={styles.captionText}>
+    <Text 
+      style={styles.captionUsername}
+      onPress={() => navigateToProfile(post.username)}
+    >
+      {post.username}
+    </Text>
+    <Text> </Text>
+    {renderTextWithHashtags(post.caption, styles.captionText, styles.hashtag)}
+  </Text>
+</View>
                 <Text style={styles.postTimestamp}>{post.timestamp} ago</Text>
               </View>
             </View>
@@ -391,6 +400,42 @@ const styles = StyleSheet.create({
   iconButton: {
     marginLeft: 16,
     padding: 4,
+    position: 'relative',
+  },
+  // Notification badge styles
+  notificationDot: {
+    position: 'absolute',
+    top: 1,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 10,
+
+    borderWidth: 1,
+    borderColor: 'white',
+
+    backgroundColor: '#FF3040',
+    zIndex: 10,
+
+  },
+  messageBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#FF3040',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    zIndex: 10,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   feedPost: {
     backgroundColor: '#fff',
@@ -505,7 +550,7 @@ const styles = StyleSheet.create({
   },
   captionUsername: {
     fontSize: 14,
-    fontWeight: '600',
+
     color: '#000',
   },
   captionText: {

@@ -6,7 +6,6 @@ import {
   ScrollView, 
   Image, 
   TouchableOpacity, 
-  TextInput,
   Dimensions 
 } from 'react-native';
 import { Text } from '@/components/text';

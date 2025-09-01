@@ -14,7 +14,24 @@ import { getVideoSource } from '@/utils/video-utils';
 
 const { width } = Dimensions.get('window');
 
-const CarouselPost = ({ post, likedPosts, toggleLike, mutedVideos, toggleMute }) => {
+
+
+
+interface CarouselPostProps {
+  post: {
+    id: string;
+    media: Array<{
+      type: 'image' | 'video';
+      url: string;
+    }>;
+  };
+  likedPosts: Set<string>;
+  toggleLike: (postId: string) => void;
+  mutedVideos: Set<string>;
+  toggleMute: (videoId: string) => void;
+}
+
+const CarouselPost = ({ post, likedPosts, toggleLike, mutedVideos, toggleMute }: CarouselPostProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showIndicators, setShowIndicators] = useState(true);
   const flatListRef = useRef(null);
